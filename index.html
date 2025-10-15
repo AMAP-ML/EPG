@@ -1,0 +1,121 @@
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Advancing End-to-End Pixel-Space Generative Modeling via Self-Superivsed Pre-training</title>
+        <!-- <link rel="icon" href=""> -->
+        <link rel="stylesheet" href="fonts/avenir-next/stylesheet.css">
+        <link rel="stylesheet" href="fonts/segoe-print/stylesheet.css">
+        <link rel="stylesheet" href="icons/style.css">
+        <link rel="stylesheet" href="css/window.css">
+        <link rel="stylesheet" href="css/carousel.css">
+        <link rel="stylesheet" href="css/selection_panel.css">
+        <link rel="stylesheet" href="css/main.css">
+        <script src="js/window.js"></script>
+        <script src="js/carousel.js"></script>
+        <script src="js/results.js"></script>
+		<script src="js/main.js"></script>
+    </head>
+    <body>
+        <div id="main">
+            <div id="title" class="x-gradient-font">
+                <span style="font-size: 39px;"> Advancing End-to-End Pixel-Space Generative Modeling via Self-Superivsed Pre-training </span>
+                    <!-- <span style="font-variant: small-caps;"></span>: A Framework for Solving Scientific Video</span><br> -->
+                <!-- <span style="font-size: 43px;">Scientific Video Inverse Problems</span><br> -->
+                <!-- <span style="font-size: 39px;">Inverse Problems with Spatiotemporal Diffusion Priors</span> -->
+            </div>
+            <div id="authors">
+                <div><a class="link" href="https://jiachcenlei.github.io/">Jiachen Lei</a><sup>1</sup></div>
+                <div>Keli Liu<sup>1</sup></div>
+                <div><a class="link" href="https://jberner.info/">Julius Berner</a><sup>2</sup></div>
+                <div><a class="link" href="https://hoim.github.io/">Haiming Yu</a><sup>1</sup></div>
+                <div><a class="link" href="https://devzhk.github.io/">Hongkai Zheng</a><sup>3</sup></div>
+                <div>Jiahong Wu<sup>1</sup></div>
+                <div><a class="link" href="https://cxxgtxy.github.io/">Xiangxiang Chu</a><sup>1</sup></div>
+
+            </div>
+            <div id="institution">
+                <div><sup>1</sup>AMAP, Alibaba Group</div>
+                <div><sup>2</sup>NVIDIA</div>
+                <div><sup>3</sup>Caltech</div>
+            </div>
+            <!-- <div class="x-center-text" style="font-size: 20px; font-weight: 700; color: #5f5f5f;">
+                in submission
+            </div> -->
+            <div id="links">
+                <div><a id="paper" href="https://arxiv.org/abs/2510.12586">Paper</a></div>
+                <div><a id="code" href="https://github.com/AMAP-ML/EPG">Code</a></div>
+            </div>
+            <div id="teaser">
+                <!--  -->
+                <div style="width: 100%;"><img src="assets/main_figure.png" style="width: 100%;"></div>
+            </div>
+            <div class="x-center-text" style="font-size: 20px; font-weight: 500; color: #3f3f3f;">
+                <b>TL;DR:</b> No reliance on any external models (e.g. VAE or DINO), a noval training framework for pixel-space image generation: <i><b>SSL pre-training + end-to-end fine-tuning</div>i></b> = SOTA performance on ImageNet-256/512 
+                <!-- <i><b>video inverse problems</b></i> based on <i><b>spatiotemporal diffusion priors</b></i>, -->
+                    <!-- enabling efficient and high-quality video reconstruction. -->
+            </div>
+            <div id="abstract" class="x-gradient-block">
+                Pixel-space generative models are often more difficult to train and generally underperform compared to their latent-space counterparts, leaving a persistent performance and efficiency gap. In this paper, we introduce a novel two-stage training framework that closes this gap for pixel-space diffusion and consistency models. In the first stage, we pre-train encoders to capture meaningful semantics from clean images while aligning them with points along the same deterministic sampling trajectory, which evolves points from the prior to the data distribution. In the second stage, we integrate the encoder with a randomly initialized decoder and fine-tune the complete model end-to-end for both diffusion and consistency models. Our training framework demonstrates strong empirical performance on ImageNet dataset. Specifically, our diffusion model reaches an FID of 2.04 on ImageNet-256 and 2.35 on ImageNet-512 with 75 number of function evaluations (NFE), surpassing prior pixel-space methods by a large margin in both generation quality and efficiency while rivaling leading VAE-based models at comparable training cost. Furthermore, on ImageNet-256, our consistency model achieves an impressive FID of 8.82 in a single sampling step, significantly surpassing its latent-space counterpart. To the best of our knowledge, this marks the first successful training of a consistency model directly on high-resolution images without relying on pre-trained VAEs or diffusion models. 
+            </div>
+
+            <div class="x-section-title"><div class="x-gradient-font">Results <span style="font-size: 40px; font-weight:600;">|</span> Diffusion model on ImageNet-256 </div></div>
+            <div style="width: 100%;"><img src="assets/imagenet256.png" style="width: 100%;"></div>
+            <p>
+                Table 1: System-level comparison on ImageNet-256 with CFG. For latent-space models, we display model parameters and sampling GFLOPs of both the VAE and the generative model. We report GFLOPs of our EPG following DiT. †: both model parameters and GFLOPs are composed of two generative models and one classifier. Text in gray: method that requires external models in addition to VAE.
+            </p>
+            <!-- <div id="results-bhvr"></div> -->
+            <div class="x-section-title"><div class="x-gradient-font">Results <span style="font-size: 40px; font-weight:600;">|</span> Consistency model on ImageNet-256 </div></div>
+            <div style="width: 100%;"><img src="assets/imagenet256_onestep.png" style="width: 100%;"></div>
+            <p>
+                Table 2: Benchmarking few-step class-conditional image generation on ImageNet-256.
+            </p>
+
+            <div class="x-section-title"><div class="x-gradient-font">Results <span style="font-size: 40px; font-weight:600;">|</span> Diffusion model on ImageNet-512</div></div>
+            <div style="width: 100%;"><img src="assets/imagenet512.png" style="width: 100%;"></div>
+            <p>
+                Table 3: System-level comparison on ImageNet-512 with CFG. Evaluation settings are the same as Table 1.
+            </p>
+            <!-- <p>We also investigate a dynamic magnetic resonance imaging (MRI) problem in cardiology. The reconstructions are given by accelerated sequences that only take 27% of runtime of the original sequences.</p> -->
+            <!-- <div id="results-dmri"></div> -->
+
+            <div class="x-section-title"><div class="x-gradient-font">Methodology</div></div>
+            <p>
+                <img src="assets/method.png" style="width: 100%;">
+            </p>
+            <p>
+                Prior works have explored training diffusion models directly on raw pixels, developing specialized model architectures or training techniques.
+                Despite these efforts, none have achieved training performance and inference efficiency comparable to VAE-based methods primarily due to the high computational cost originating from the model backbone
+                or the slow convergence rate, representing the two major challenges of operating in pixel space. 
+            </p>
+            <p>
+                In this work, we address this by decomposing the training paradigm into <i><b>two separate stages</b></i>> as in SSL: 
+                (1) <i><b>Pre-training</i>></b>: we pre-train encoders to capture visual semantics from clean images while aligning them with corresponding points on the same deterministic sampling trajectory, which evolves points from pure Gaussian to the data distribution. 
+                In practice, this is realized by matching images with shared noise but different noise levels as in consistency tuning. 
+                This pre-training approach reformulates representation learning on noisy images as a generative alignment task, connecting features of noisy samples to their progressively cleaner versions.
+                (2) <i><b>Fine-tuning</i>></b>: Given the pre-trained encoders, we fine-tune it alongside a randomly initialized decoder in an end-to-end manner under task-specific configurations.
+            </p>
+
+            <div class="x-section-title"><div class="x-gradient-font">Citation</div></div>
+            <p>
+                If you find our work interesting, please consider citing our paper:
+            </p>
+            <p class="bibtex x-gradient-block">
+                @misc{lei2025advancingendtoendpixelspace,
+                    title={Advancing End-to-End Pixel Space Generative Modeling via Self-supervised Pre-training}, 
+                    author={Jiachen Lei and Keli Liu and Julius Berner and Haiming Yu and Hongkai Zheng and Jiahong Wu and Xiangxiang Chu},
+                    year={2025},
+                    eprint={2510.12586},
+                    archivePrefix={arXiv},
+                    primaryClass={cs.CV},
+                    url={https://arxiv.org/abs/2510.12586}, 
+              }
+            </p>
+        </div>
+        <div id="bottombar">
+            <div>Advancing End-To-End Pixel-Space Generative Modeling via Self-Supervised Pre-training</div>
+            <div>Template adopted from <a class="link" href="https://trellis3d.github.io/">Trellis</a> designed by <span>Jianfeng Xiang</span>.</div>
+        </div>
+    </body>
+</html>

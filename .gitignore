@@ -1,0 +1,174 @@
+### General ###
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+*.swp
+*.swo
+*.bak
+*.tmp
+
+### Node.js ###
+node_modules/
+npm-debug.log
+yarn-error.log
+.pnp/
+.pnp.js
+
+### Python ###
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+### Java ###
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+*.ipr
+*.iws
+out/
+
+### C/C++ ###
+*.o
+*.obj
+*.so
+*.dll
+*.a
+*.lib
+*.exe
+*.dSYM/
+
+### Go ###
+*.exe
+*.test
+*.out
+
+### Rust ###
+target/
+Cargo.lock
+
+### Swift ###
+*.xcworkspace/
+*.xcodeproj/
+DerivedData/
+*.ipa
+*.dSYM/
+
+### Ruby ###
+*.gem
+vendor/bundle/
+
+### PHP ###
+vendor/
+*.phar
+
+### Dotnet ###
+bin/
+obj/
+*.pdb
+*.suo
+*.user
+*.vscode/
+
+### Laravel ###
+/vendor
+/node_modules
+/storage/*.key
+.env
+
+### Logs and databases ###
+logs/
+*.log
+*.sqlite
+*.sqlite3
+db/*.sqlite3
+db/*.sqlite
+
+### Editors and IDEs ###
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+*.code-workspace
+
+### OS-specific ###
+*.DS_Store
+*.lnk
+*.Thumbs.db
+
+### Images, media, and generated files ###
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.tiff
+*.bmp
+*.ico
+*.mp4
+*.avi
+*.mkv
+*.mov
+*.mp3
+*.wav
+*.flac
+*.ogg
+
+### Archives and compressed files ###
+*.zip
+*.tar
+*.gz
+*.bz2
+*.rar
+*.7z
+
+### Docker and Kubernetes ###
+*.dockerignore
+docker-compose.override.yml
+.kube/
+
+### Terraform ###
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+### Ansible ###
+*.retry
+
+### Helm ###
+*.tgz
+
+### AWS ###
+.aws/
+*.pem
+
+### Google Cloud ###
+.gcloud/
+
+### Azure ###
+.azure/
+
+### Secrets and Credentials ###
+.env
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+*.jks
+
+### Custom ###
+/private/
+/tmp/
+/.cache/
+
+!step.png
+!assets/**
+!icons/**
+.DS_Store
+assets/video.mp4
