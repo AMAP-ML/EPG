@@ -68,7 +68,7 @@
             </div>
 
             <div class="x-section-title"><div class="x-gradient-font">Results <span style="font-size: 40px; font-weight:600;">|</span> Diffusion model on ImageNet-256 </div></div>
-            <div style="width: 100%;"><img src="assets/imagenet256.png" style="width: 50%;"></div>
+            <div style="width: 100%;"><center><img src="assets/imagenet256.png" style="width: 50%;"></center></div>
             <p>
                 Table 1: System-level comparison on ImageNet-256 with CFG. For latent-space models, we display model parameters and sampling GFLOPs of both the VAE and the generative model.
                 We report GFLOPs of our EPG following DiT.  †: both model parameters and GFLOPs are composed of two generative models and one classifier.
@@ -76,13 +76,13 @@
             </p>
             <!-- <div id="results-bhvr"></div> -->
             <div class="x-section-title"><div class="x-gradient-font">Results <span style="font-size: 40px; font-weight:600;">|</span> Consistency model on ImageNet-256 </div></div>
-            <div style="width: 100%;"><img src="assets/imagenet256_onestep.png" style="width: 50%;"></div>
+            <div style="width: 100%;"><center><<img src="assets/imagenet256_onestep.png" style="width: 50%;"></center><</div>
             <p>
                 Table 2: Benchmarking few-step class-conditional image generation on ImageNet-256.
             </p>
 
             <div class="x-section-title"><div class="x-gradient-font">Results <span style="font-size: 40px; font-weight:600;">|</span> Diffusion model on ImageNet-512</div></div>
-            <div style="width: 100%;"><img src="assets/imagenet512.png" style="width: 50%;"></div>
+            <div style="width: 100%;"><center><<img src="assets/imagenet512.png" style="width: 50%;"></center><</div>
             <p>
                 Table 3: System-level comparison on ImageNet-512 with CFG. Evaluation settings are the same as Table 1.
             </p>
@@ -91,7 +91,13 @@
 
             <div class="x-section-title"><div class="x-gradient-font">Methodology</div></div>
             <p>
-                <img src="assets/method.png" style="width: 50%;">
+                <center><img src="assets/method.png" style="width: 70%;"></center>
+            </p>
+            <p>
+                Figure 2: Overview of our method. (Left) Our pre-training framework. c is a learnable token [CLS], t0, tn, tn−1 are time conditions, (y1, y2) are augmented views of clean image xt0,
+                (xtn , xtn−1 ) are temporally adjacent points from the same PF ODE trajectory with xt0 as the initial point.
+                θ<sup>−</sup> is the exponential moving average of θ, and sg is the stop gradient operation.
+                (Right) Fine-tuning stage. After pre-training, we discard the projector and train Eθ along side a randomly initialized decoder Dθ in downstream generation tasks.
             </p>
             <p>
                 Prior works have explored training diffusion models directly on raw pixels, developing specialized model architectures or training techniques.
@@ -111,15 +117,15 @@
                 If you find our work interesting, please consider citing our paper:
             </p>
             <p class="bibtex x-gradient-block">
-                @misc{lei2025advancingendtoendpixelspace,
-                    title={Advancing End-to-End Pixel Space Generative Modeling via Self-supervised Pre-training}, 
-                    author={Jiachen Lei and Keli Liu and Julius Berner and Haiming Yu and Hongkai Zheng and Jiahong Wu and Xiangxiang Chu},
-                    year={2025},
-                    eprint={2510.12586},
-                    archivePrefix={arXiv},
-                    primaryClass={cs.CV},
-                    url={https://arxiv.org/abs/2510.12586}, 
-              }
+    @misc{lei2025advancingendtoendpixelspace,
+        title={Advancing End-to-End Pixel Space Generative Modeling via Self-supervised Pre-training}, 
+        author={Jiachen Lei and Keli Liu and Julius Berner and Haiming Yu and Hongkai Zheng and Jiahong Wu and Xiangxiang Chu},
+        year={2025},
+        eprint={2510.12586},
+        archivePrefix={arXiv},
+        primaryClass={cs.CV},
+        url={https://arxiv.org/abs/2510.12586}, 
+    }
             </p>
         </div>
         <div id="bottombar">
