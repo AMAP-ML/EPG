@@ -1,0 +1,12 @@
+absl-py
+ml-collections
+blobfile
+triton==2.1.0
+accelerate==0.24.0
+torch==2.1.1
+torchvision==0.16.1
+xformers==0.0.23
+timm==0.6.7
+numpy==1.26.4
+einops
+scipy
