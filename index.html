@@ -46,15 +46,15 @@
                 <div><a id="paper" href="https://arxiv.org/abs/2510.12586">Paper</a></div>
                 <div><a id="code" href="https://github.com/AMAP-ML/EPG">Code</a></div>
             </div>
-             <div id="teaser">
-                <!--  -->
-                <div style="width: 100%;"><img src="assets/main_figure2.png" style="width: 100%;"></div>
-            </div>
             <div style="width: 100%;"><center><img src="assets/matrix.jpg" style="width: 50%;"></center></div>
             <div class="x-center-text" style="font-size: 20px; font-weight: 500; color: #3f3f3f;">
                 <b>TL;DR:</b> No reliance on any external models (e.g. VAE or DINO), a noval training framework for pixel-space image generation: <i><b>SSL pre-training + end-to-end fine-tuning</b></i> = SOTA performance on ImageNet-256/512 
                 <!-- <i><b>video inverse problems</b></i> based on <i><b>spatiotemporal diffusion priors</b></i>, -->
                     <!-- enabling efficient and high-quality video reconstruction. -->
+            </div>
+             <div id="teaser">
+                <!--  -->
+                <div style="width: 100%;"><img src="assets/main_figure2.png" style="width: 100%;"></div>
             </div>
             <div id="abstract" class="x-gradient-block">
                 Pixel-space generative models are often more difficult to train and generally underperform compared to their latent-space counterparts, leaving a persistent performance and efficiency gap. In this paper, we introduce a novel two-stage training framework that closes this gap for pixel-space diffusion and consistency models. In the first stage, we pre-train encoders to capture meaningful semantics from clean images while aligning them with points along the same deterministic sampling trajectory, which evolves points from the prior to the data distribution. In the second stage, we integrate the encoder with a randomly initialized decoder and fine-tune the complete model end-to-end for both diffusion and consistency models. Our framework achieves state-of-the-art (SOTA) performance on ImageNet. Specifically, our diffusion model reaches an FID of 1.58 on ImageNet-256 and 2.35 on ImageNet-512 with 75 number of function evaluations (NFE) surpassing prior pixel-space methods and VAE-based counterparts by a large margin in both generation quality and training efficiency. In a direct comparison, our model significantly outperforms DiT while using only around 30% of its training compute. Furthermore, our consistency model achieves an impressive FID of 8.82 on ImageNet-256, significantly outperforming its latent-space counterparts. This marks the first successful training of a consistency model directly on highresolution images without relying on pre-trained VAEs or diffusion models. Our
