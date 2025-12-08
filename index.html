@@ -67,23 +67,24 @@
                 We report GFLOPs of our EPG following DiT.  †: both model parameters and GFLOPs are composed of two generative models and one classifier.
                 Text in gray: method that requires external models in addition to VAE. Line in Blue: adopt class-balanced sampling.
             </p>
+            <div class="x-section-title"><div class="x-gradient-font">Results <span style="font-size: 40px; font-weight:600;">|</span> Diffusion model on ImageNet-512</div></div>
+            <div style="width: 100%;"><center><img src="assets/imagenet512.png" style="width: 70%;"></center></div>
+            <p>
+                <center>Table 2: System-level comparison on ImageNet-512 with CFG. Evaluation settings are the same as Table 1.</center>
+            </p>
+
             <!-- <div id="results-bhvr"></div> -->
             <div class="x-section-title"><div class="x-gradient-font">Results <span style="font-size: 40px; font-weight:600;">|</span> Consistency model on ImageNet-256 </div></div>
             <div style="width: 100%;"><center><img src="assets/imagenet256_onestep.png" style="width: 50%;"></center></div>
             <p>
-                Table 2: Benchmarking few-step class-conditional image generation on ImageNet-256.
+                <center>Table 3: Benchmarking few-step class-conditional image generation on ImageNet-256.</center>
             </p>
 
-            <div class="x-section-title"><div class="x-gradient-font">Results <span style="font-size: 40px; font-weight:600;">|</span> Diffusion model on ImageNet-512</div></div>
-            <div style="width: 100%;"><center><img src="assets/imagenet512.png" style="width: 70%;"></center></div>
-            <p>
-                Table 3: System-level comparison on ImageNet-512 with CFG. Evaluation settings are the same as Table 1.
-            </p>
             <!-- <p>We also investigate a dynamic magnetic resonance imaging (MRI) problem in cardiology. The reconstructions are given by accelerated sequences that only take 27% of runtime of the original sequences.</p> -->
             <!-- <div id="results-dmri"></div> -->
             
             <div class="x-section-title"><div class="x-gradient-font">Results <span style="font-size: 40px; font-weight:600;">|</span> Comparing training time with DiT</div></div>
-            <div style="width: 100%;"><center><img src="assets/trainingtime.png" style="width: 70%;"></center></div>
+            <div style="width: 100%;"><center><img src="assets/trainingtime.png" style="width: 50%;"></center></div>
             <p>
                 Table 4: Training time comparison with the DiT baseline. Our EPG model requires only around 30% of the training time needed for DiT.
             </p>
