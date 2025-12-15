@@ -50,8 +50,8 @@ def eval_worker_fn(fpath, dest, resolution):
 
 TARGET_RESOLUTION = 256
 SPLIT = "train"
-SOUCE_TO_RAW_DATASET = "" # e.g., /mnt/workspace/imagenet-1k
-DEST_FOLDER = "" # e.g. /mnt/workspace/ImageNet512/
+SOUCE_TO_RAW_DATASET = "" # e.g., /workspace/imagenet-1k
+DEST_FOLDER = "" # e.g. /workspace/ImageNet512/
 
 def main():
 

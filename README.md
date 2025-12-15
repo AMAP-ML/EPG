@@ -1,4 +1,4 @@
-# Official Codes for: "Advancing End-To-End Pixel-Space Generative Modeling Via Self-Supervised Pre-Training"
+# Official Implementation of "There is No VAE: End-To-End Pixel-Space Generative Modeling Via Self-Supervised Pre-Training"
 [![arXiv](https://img.shields.io/badge/ArXiv%20Paper-2510.12586-b31b1b.svg)](https://arxiv.org/pdf/2510.12586) [![project page](https://img.shields.io/badge/Project%20Page-EPG-blue.svg)](https://amap-ml.github.io/EPG/)
 
 This repository provides the official PyTorch implementation of EPG, a framework for training high-quality pixel-space image generation models through a two-stage pipeline: **SSL Pre-training followed by End-to-End Fine-tuning**, adapting self-supervised image classifier training principles to diffusion/consistency models (DM/CM).
@@ -125,7 +125,7 @@ We open-source checkpoints of our models fine-tuned in downstream tasks. More ch
 | -- | -- | -- | -- |
 | EPG-XL/16 | DM on IN-256 | 2.04 | [download](https://huggingface.co/jiachenlei/EPG/resolve/main/EPG-XL16-imagenet256.pth?download=true) |
 | EPG-XXL/16 | DM on IN-256 | 1.87 | [download](https://huggingface.co/jiachenlei/EPG/resolve/main/EPG-XXL16-imagenet256.pth?download=true) |
-| EPG-G/16 | DM on IN-256 | 1.70 |  [download](https://huggingface.co/jiachenlei/EPG/resolve/main/EPG-G16-imagenet256.pth?download=true) |
+| EPG-G/16 | DM on IN-256 | 1.58 |  [download](https://huggingface.co/jiachenlei/EPG/resolve/main/EPG-G16-imagenet256.pth?download=true) |
 | EPG-L/32 | DM on IN-512 | 2.35 | [download](https://huggingface.co/jiachenlei/EPG/resolve/main/EPG-L32-imagenet512.pth?download=true) |
 | EPG-L/16 | CM on IN-256 | 8.82 | [download](https://huggingface.co/jiachenlei/EPG/resolve/main/EPG-L16-imagenet256-onestep.pth?download=true) |
 

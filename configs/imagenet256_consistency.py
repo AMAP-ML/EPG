@@ -9,6 +9,7 @@ def d(**kwargs):
 def get_config():
     config = ml_collections.ConfigDict()
     config.seed = 1234
+    config.path = ""
 
     config.diffusion = d(
         sigma_data = .5,

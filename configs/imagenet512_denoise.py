@@ -10,6 +10,7 @@ def get_config():
     config = ml_collections.ConfigDict()
     config.seed = 1234
     config.path = ""  # path to pre-trained ckpt
+
     config.diffusion = d(
         sigma_data = .5,
         sigma_max = 80.0,
