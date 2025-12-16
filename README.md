@@ -3,21 +3,21 @@
 
 This repository provides the official PyTorch implementation of EPG, a framework for training high-quality pixel-space image generation models through a two-stage pipeline: **SSL Pre-training followed by End-to-End Fine-tuning**, adapting self-supervised image classifier training principles to diffusion/consistency models (DM/CM).
 
-:mag_right: **Recommended methods that accelerate DM training via pre-training**
+:mag_right: **Simple yet effective solutions that substantially accelerate DM training without interfering the training pipeline**
 - **Latent Space (USP)**: Accelerates training with a two-stage process: first, a powerful representation learning stage, then end-to-end fine-tuning. **Ref**: [Paper](https://arxiv.org/pdf/2503.06132), [GitHub](https://github.com/AMAP-ML/USP).
-- **Pixel Space (MaskDM)**: Reduces training cost by pre-training on heavily masked images, then fine-tuning on full images. Ideal for limited compute or small datasets (e.g. Celeb-HQ). **Ref**: [Paper](https://arxiv.org/pdf/2306.11363).
+- **Pixel Space (MaskDM)**: Reduces training cost by pre-training on heavily masked images, then fine-tuning on full images. Ideal for limited compute and small datasets (e.g. Celeb-HQ). **Ref**: [Paper](https://arxiv.org/pdf/2306.11363).
 
-<img src="figures/main_figure.png" width=85% style="display:block;margin-left:auto;margin-right:auto; ">
-<p><center>Figure 1: Our model achieves SOTA FID 1.58 (with 75 NFE) on ImageNet-256. We display some qualitative results displayed above.</center></p>
+<img src="figures/main_figure2.png" width=85% style="display:block;margin-left:auto;margin-right:auto; ">
+<p><center>Figure 1: With SSL pre-training, our Pixel-Space diffusion transformer achieves 1.58 SOTA FID (with 75 NFE) on ImageNet-256.</center></p>
 
 ## News
-- [2025.12.02] Upload checkpoints and inference code
+- [2025.12.15] Upload checkpoints and inference code
 
 
 ## Environment Setup
 We list specific versions of dependencies in requirements.txt.
 ```bash
-# We use python==3.9.0
+# Note: accelerate==0.24.0
 pip install -r requirements.txt
 ```
 
@@ -66,7 +66,7 @@ run_args="--main_process_ip localhost \
         --machine_rank 0 \
         --mixed_precision no \
         --num_processes 8 \
-"
+      "
 # interval guidance sampling utilizing heun sampler with 32 sampling steps
 accelerate launch $run_args sample.py --config=configs/imagenet256_denoise.py \
       --config.path="path to folder that contains nnet_ema.pth" \
@@ -96,19 +96,19 @@ accelerate launch $run_args sample.py --config=configs/imagenet256_denoise.py \
       --config.dataset.class_cond=True \
       --config.sample.cfg_scale=$scale \
 ```
-## Evaluation
-Evaluating the FID score
-- Step1: convert generated images into npz file.
+## FID Evaluation
+- Step1: convert generated images into .npz file.
 ```bash
 cd evaluations
 python prepare_npz.py [path to folder that contains generated images]
 ```
-- Step2: compute FID score given reference npz file from ADM. Please refer to the [ADM repository](https://github.com/openai/guided-diffusion ) to install necessary environments and download reference npz file.
+- Step2: compute FID score given reference npz file from ADM. Please refer to the [ADM repository](https://github.com/openai/guided-diffusion ) to download the reference npz file and setup necessary environments.
 ```bash
-python evaluator.py  [path to npz file of npz file from ADM] [path to npz file of generated images]
+# in ./evaluations
+python evaluator.py  [path to reference .npz] [path to .npz of generated images]
 ```
 ## Checkpoints
-We open-source checkpoints of our models fine-tuned in downstream tasks. More checkpoints are coming, stay tuned.
+We open-source checkpoints of our fine-tuned models.
 
 **Table 1:** Network configurations. Encoder and decoder settings are separated by comma.
 | Name | Blocks | Dim | Heads | Params |
@@ -120,7 +120,7 @@ We open-source checkpoints of our models fine-tuned in downstream tasks. More ch
 
 </br>
 
-**Table 2:** Fine-tuned model in downstream tasks. FID50K, Heun32, Random sampling.
+**Table 2:** Fine-tuned model in downstream tasks. Settings: FID50K, Heun32, intercal-cfg.
 | Model | Task | FID  | Download Link |
 | -- | -- | -- | -- |
 | EPG-XL/16 | DM on IN-256 | 2.04 | [download](https://huggingface.co/jiachenlei/EPG/resolve/main/EPG-XL16-imagenet256.pth?download=true) |
@@ -138,7 +138,7 @@ We open-source checkpoints of our models fine-tuned in downstream tasks. More ch
 
 
 ## Reproducibility
-You could reproduce FID reported in our paper by running the following commands. Before that, you should specify the path to the model weights and modify necessary parameters in the scripts.
+You could reproduce FID reported in our paper by running the following commands. You shall specify the path to the model weights and modify necessary parameters in the scripts.
 ```bash
 # EPG's DM variant
 sh scripts/sample_dm_in256.sh # sample EPG-XL/16 trained on IN-256
