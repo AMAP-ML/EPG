@@ -63,7 +63,7 @@ class ImageDataset(Dataset):
             self.std = [0.5, 0.5, 0.5]
         elif std == "imagenet":
             self.mean = [0.485, 0.456, 0.406]
-            self.std = [0.229*2, 0.224*2, 0.225*2]
+            self.std = [0.229*2, 0.224*2, 0.225*2] # normalize to (mean, std) = (0, 0.5)
 
         if horizontal_flip:
             self.simple_augmentation = transforms.Compose([
@@ -136,10 +136,7 @@ def load_data(
     if not data_dir:
         raise ValueError("unspecified data directory")
 
-    all_files = glob.glob(os.path.join(data_dir, "*/*.JPEG")) # for imagenet
-    if len(all_files) == 0:
-        all_files = glob.glob(os.path.join(data_dir, "*/*.png"))
-
+    all_files = glob.glob(os.path.join(data_dir, "*/*.png"))
     logging.info(f"total training samples: {len(all_files)}")
 
     class_names = [bf.basename(path).split("_")[0] for path in all_files]

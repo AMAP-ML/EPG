@@ -1,7 +1,7 @@
 # Official Implementation of "There is No VAE: End-To-End Pixel-Space Generative Modeling Via Self-Supervised Pre-Training"
 [![arXiv](https://img.shields.io/badge/ArXiv%20Paper-2510.12586-b31b1b.svg)](https://arxiv.org/pdf/2510.12586) [![project page](https://img.shields.io/badge/Project%20Page-EPG-blue.svg)](https://amap-ml.github.io/EPG/)
 
-This repository provides the official PyTorch implementation of EPG, a framework for training high-quality pixel-space image generation models through a two-stage pipeline: **SSL Pre-training followed by End-to-End Fine-tuning**, adapting self-supervised image classifier training principles to diffusion/consistency models (DM/CM).
+This repository provides the official PyTorch implementation of EPG, a framework for training high-quality pixel-space image diffusion/consistency models through a two-stage pipeline: **SSL Pre-training followed by End-to-End Fine-tuning**.
 
 :mag_right: **Simple yet effective solutions that substantially accelerate DM training without interfering the training pipeline**
 - **Latent Space (USP)**: Accelerates training with a two-stage process: first, a powerful representation learning stage, then end-to-end fine-tuning. **Ref**: [Paper](https://arxiv.org/pdf/2503.06132), [GitHub](https://github.com/AMAP-ML/USP).
@@ -10,11 +10,12 @@ This repository provides the official PyTorch implementation of EPG, a framework
 <img src="figures/main_figure2.png" width=85% style="display:block;margin-left:auto;margin-right:auto; ">
 <p><center>Figure 1: With SSL pre-training, our Pixel-Space diffusion transformer achieves 1.58 SOTA FID (with 75 NFE) on ImageNet-256.</center></p>
 
-## News
-- [2025.12.15] Upload checkpoints and inference code
+## News :fire:
+- [2025.4.1] Release codes and checkpoints.
+> Note: As of 2026.03, It's possible the training codes are not fully tested. Please let us know if you have any problems in reproducing our results.
 
 
-## Environment Setup
+## Dependencies
 We list specific versions of dependencies in requirements.txt.
 ```bash
 # Note: accelerate==0.24.0
@@ -27,8 +28,8 @@ Dataset file structure:
 ImageNet256/
     train/
       n01440764/
-            0000.JPEG
-            0001.JPEG
+            0000.png
+            0001.png
             ...
       n01443537/
       ...
@@ -38,27 +39,29 @@ Center-crop training images into target resolution (e.g. 256):
 ```bash
 cd prepare_dataset
 
-# Required variables:
+# Variables to be set in process.py
 # TARGET_RESOLUTION = 256, target resolution, e.g., 256, 512
 # SPLIT = "train", subset to process, [train, val]
-# SOUCE_TO_RAW_DATASET = "" # path to the raw imagenet-1k dataset. e.g., /mnt/workspace/imagenet-1k
+# PATH_TO_RAW_DATASET = "" # path to the raw imagenet-1k dataset. e.g., /mnt/workspace/imagenet-1k
 # DEST_FOLDER = "" # path to save processed images. e.g. /mnt/workspace/ImageNet512/
 python process.py
 ```
 
-## Training
-> Stay tuned, working on it.
+## Training Scripts
+```bash
+# Pre-training
+sh scripts/pretrain.sh
 
-<!-- <div style="display:inline-block">
-<img src="figures/method.png" width=65% style="display:inline;margin-left:6.5%;margin-right:1%">
-<img src="figures/method_finetune.png" width=25% style="display:inline;">
-<p>
-<center>Figure 2: Our pre-training (left) and fine-tuning pipeline (right). After pre-training, we only keep Encoder $E_\theta$ while discarding other components. See our <a href="https://arxiv.org/pdf/2510.12586">paper</a> for more details.</center>
-</p>
-<div> -->
+# Denoising tuning
+sh scripts/denoise_tune.sh
 
+# Consistency tuning
+sh scripts/consistency_tune.sh
+```
 
 ## Inference
+
+interval guidance sampling utilizing heun sampler with 32 sampling steps.
 ```bash
 run_args="--main_process_ip localhost \
         --main_process_port 12345 \
@@ -67,33 +70,22 @@ run_args="--main_process_ip localhost \
         --mixed_precision no \
         --num_processes 8 \
       "
-# interval guidance sampling utilizing heun sampler with 32 sampling steps
+
 accelerate launch $run_args sample.py --config=configs/imagenet256_denoise.py \
       --config.path="path to folder that contains nnet_ema.pth" \
       --config.sample.path="path to save sampled images. if empty, temporary path will be used" \
       --config.dataset.data_dir="path to ImageNet256/train" \
       --config.sample.num_samples=10000 \
       --config.dataset.fid_stat_path="path to .npz of evaluation statistics" \
-      --config.nnet.model_type="DMViT" \
+      --config.nnet.model_type="EPGViT" \
       --config.nnet.depth=12 \
       --config.nnet.num_heads=12 \
       --config.nnet.embed_dim=768 \
       --config.nnet.decoder_depth=12 \
       --config.nnet.decoder_num_heads=22 \
       --config.nnet.decoder_embed_dim=1584 \
-      --config.nnet.tokens=1 \
-      --config.ema_scale.start_scales=1280 \
-      --config.ema_scale.scale_mode="fixed" \
-      --config.diffusion.shift_sigma=True \
       --config.sample.sampling_step=32 \
-      --config.sample.mode="cond" \
       --config.sample.sampler="heun" \
-      --config.diffusion.prediction_target="x0" \
-      --config.sample.mini_batch_size=100 \
-      --config.dataset.image_size=256 \
-      --config.nnet.image_size=256 \
-      --config.nnet.num_classes=1000 \
-      --config.dataset.class_cond=True \
       --config.sample.cfg_scale=$scale \
 ```
 ## FID Evaluation
@@ -108,7 +100,7 @@ python prepare_npz.py [path to folder that contains generated images]
 python evaluator.py  [path to reference .npz] [path to .npz of generated images]
 ```
 ## Checkpoints
-We open-source checkpoints of our fine-tuned models.
+We release checkpoints of our pre-trained and fine-tuned models in the paper.
 
 **Table 1:** Network configurations. Encoder and decoder settings are separated by comma.
 | Name | Blocks | Dim | Heads | Params |
@@ -120,7 +112,14 @@ We open-source checkpoints of our fine-tuned models.
 
 </br>
 
-**Table 2:** Fine-tuned model in downstream tasks. Settings: FID50K, Heun32, intercal-cfg.
+**Table 2:** Pre-trained model.
+| Model | Dataset | Download Link |
+| -- | -- | -- |
+| RCM-B | IN-256 | [download]() |
+| RCM-B | IN-512 | [download]() |
+| RCM-L | IN-256 | [download]() |
+
+**Table 3:** Fine-tuned model in downstream tasks. Settings: FID50K, Heun32, intercal-cfg.
 | Model | Task | FID  | Download Link |
 | -- | -- | -- | -- |
 | EPG-XL/16 | DM on IN-256 | 2.04 | [download](https://huggingface.co/jiachenlei/EPG/resolve/main/EPG-XL16-imagenet256.pth?download=true) |
@@ -160,6 +159,8 @@ sh scripts/sample_cm_in256.sh # sample EPG-L/16 trained on IN-256
 </br>
 
 :star2: **If you find our codes useful, please do not hesitate to star our github repo.**
+
+> As of 2026.04.01, it's possible the training codes are not fully tested. Please let us know if you have any problems in reproducing the results.
 
 ### Acknowledgement
 Our codes are built upon the following repositories:

@@ -50,13 +50,13 @@ def eval_worker_fn(fpath, dest, resolution):
 
 TARGET_RESOLUTION = 256
 SPLIT = "train"
-SOUCE_TO_RAW_DATASET = "" # e.g., /workspace/imagenet-1k
+PATH_TO_RAW_DATASET = "" # e.g., /workspace/imagenet-1k
 DEST_FOLDER = "" # e.g. /workspace/ImageNet512/
 
 def main():
 
     split = SPLIT
-    path = f"{SOUCE_TO_RAW_DATASET}/{SPLIT}/"
+    path = f"{PATH_TO_RAW_DATASET}/{SPLIT}/"
     dest = f"{DEST_FOLDER}/{SPLIT}"
     resolution = TARGET_RESOLUTION
 

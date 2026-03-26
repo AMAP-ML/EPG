@@ -76,17 +76,11 @@ class Attention(nn.Module):
         elif ATTENTION_MODE == 'xformers':    
             qkv = einops.rearrange(qkv, 'B L (K H D) -> K B L H D', K=3, H=self.num_heads)
             q, k, v = qkv[0], qkv[1], qkv[2]  # B L H D
-            if self.qk_norm:
-                q = self.qnorm(q).to(v)
-                k = self.knorm(k).to(v)
             x = xformers.ops.memory_efficient_attention(q, k, v, p=self.attn_drop_rate)
             x = einops.rearrange(x, 'B L H D -> B L (H D)', H=self.num_heads)
         elif ATTENTION_MODE == 'math':
             qkv = einops.rearrange(qkv, 'B L (K H D) -> K B H L D', K=3, H=self.num_heads)
             q, k, v = qkv[0], qkv[1], qkv[2]  # B H L D
-            if self.qk_norm:
-                q = self.qnorm(q).to(v)
-                k = self.knorm(k).to(v)
             attn = (q @ k.transpose(-2, -1)) * self.scale
             attn = attn.softmax(dim=-1)
             attn = self.attn_drop(attn)
@@ -97,7 +91,6 @@ class Attention(nn.Module):
         x = self.proj(x)
         x = self.proj_drop(x)
         return x
-
 
 
 class Mlp(nn.Module):
@@ -122,7 +115,7 @@ class Mlp(nn.Module):
 class Block(nn.Module):
 
     def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
-                 drop_path=0., act_layer=nn.GELU, norm_layer=LayerNorm, use_checkpoint=False, skip=False, noise_inject=False, qk_norm=False):
+                 drop_path=0., act_layer=nn.GELU, norm_layer=LayerNorm):
         super().__init__()
         self.norm1 = norm_layer(dim)
         self.attn = Attention(
@@ -131,36 +124,13 @@ class Block(nn.Module):
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
         self.norm2 = norm_layer(dim)
         mlp_hidden_dim = int(dim * mlp_ratio)
-        self.skip_linear = nn.Linear(2 * dim, dim) if skip else None
-
-        if noise_inject:
-            self.to_noise = nn.Linear(dim, dim)
-            self.to_noise_norm = None if self.skip_norm else nn.LayerNorm(dim)
-        else:
-            self.to_noise = None
-
         self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
-        self.use_checkpoint = use_checkpoint
 
-    def _forward(self, x, skip=None, noise=None):
-
-        if skip is not None:
-            # cls_token = x[:, 0].unsqueeze(dim=1)
-            x = self.skip_linear(torch.cat([x, skip], dim=2))
-            # x = torch.cat([cls_token, x], dim=1)
-        if noise is not None:
-            high_freq = self.to_noise(noise)
-            x += high_freq
+    def forward(self, x):
 
         x = x + self.drop_path(self.attn(self.norm1(x)))
         x = x + self.drop_path(self.mlp(self.norm2(x)))
         return x
-
-    def forward(self, x, skip=None, noise=None):
-        if self.use_checkpoint:
-            return torch.utils.checkpoint.checkpoint(self._forward, x, skip, noise)
-        else:
-            return self._forward(x, skip, noise)
 
 
 def modulate(x, shift, scale):
@@ -170,7 +140,7 @@ def modulate(x, shift, scale):
 class DecoderBlock(nn.Module):
 
     def __init__(self, dim, encoder_dim, num_heads=12, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0., proj_drop=0.0,
-                 drop_path=0., act_layer=nn.GELU, norm_layer=LayerNorm, use_checkpoint=False, skip=False, skip_post_norm=False):
+                 drop_path=0., act_layer=nn.GELU, norm_layer=LayerNorm, skip=False, skip_post_norm=False):
         super().__init__()
         self.norm1 = norm_layer(dim)
 
@@ -189,9 +159,8 @@ class DecoderBlock(nn.Module):
         )
 
         self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
-        self.use_checkpoint = use_checkpoint
 
-    def _forward(self, x, t=None, skip=None):
+    def forward(self, x, t=None, skip=None):
         """
             t.shape: B, D
         """
@@ -204,12 +173,6 @@ class DecoderBlock(nn.Module):
         x = x + self.drop_path( gate_mlp * self.mlp(modulate(self.norm2(x), shift_mlp, scale_mlp)) )
 
         return x
-
-    def forward(self, x, t, skip=None):
-        if self.use_checkpoint:
-            return torch.utils.checkpoint.checkpoint(self._forward, x, t, skip)
-        else:
-            return self._forward(x, t, skip)
 
 
 class PatchEmbed(nn.Module):
@@ -241,8 +204,6 @@ class PatchEmbed(nn.Module):
         x = self.proj(x)
         if self.flatten:
             x = x.flatten(2).transpose(1, 2)  # BCHW -> BNC
-        # NOTE: U-ViT/DiT do not use normalization layer after the patch embedding
-        # x = self.norm(x)
         return x
 
 
@@ -259,50 +220,62 @@ class RCMViT(nn.Module):
             num_heads=12,
             mlp_ratio=4., qkv_bias=False, qk_scale=None,
             norm_layer=LayerNorm,
-            mlp_time_embed=False,
-            use_checkpoint=False,
             tokens = 1,
-
-            stop_grad_conv1 = False,
-            moco_initialization = False,
             proj_layers=3,
-            output_format = "clstoken",
-
-            qk_norm=False,
             drop=0., attn_drop=0., drop_path=0.,
-            **kwargs, # reserved for training rcm-uvit model
+            **kwargs, # reserved
         ):
         super().__init__()
-        self.num_features = self.embed_dim = embed_dim  # num_features for consistency with other models
+        self.num_features = self.embed_dim = embed_dim
         self.in_chans = in_channels
-        self.dtype= torch.float32 # by default use float32
+        self.dtype= torch.float32
         self.patch_size = patch_size
         self.patch_embed = PatchEmbed(img_size=image_size, patch_size=patch_size, in_chans=in_channels, embed_dim=embed_dim)
 
         self.num_patches = num_patches = (image_size // patch_size) ** 2
         self.patch_dim = patch_size ** 2 * in_channels
-        self.kwargs = kwargs # reserved for training rcm-uvit model
-        self.output_format = output_format
-
-        self.time_embed = nn.Sequential(
-            nn.Linear(embed_dim, 4 * embed_dim),
-            nn.SiLU(),
-            nn.Linear(4 * embed_dim, embed_dim),
-        ) if mlp_time_embed else nn.Identity()
+        self.kwargs = kwargs # reserved
 
         self.extras = 1 + tokens
+        self.tokens = tokens
+
+        self.cls_token = nn.Parameter(torch.zeros(1, tokens, embed_dim))
+        self.pos_embed = nn.Parameter(torch.zeros(1, self.extras + num_patches, embed_dim))
+        self.time_embed = nn.Identity()
+
         self.blocks = nn.ModuleList([
             Block(
                 dim=embed_dim, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, qk_scale=qk_scale,
-                norm_layer=norm_layer, use_checkpoint=use_checkpoint, drop=drop, attn_drop=attn_drop, drop_path=drop_path, qk_norm=qk_norm)
+                norm_layer=norm_layer, drop=drop, attn_drop=attn_drop, drop_path=drop_path)
             for _ in range(depth)])
 
-        self.tokens = tokens
-        self.cls_token = nn.Parameter(torch.zeros(1, tokens, embed_dim))
-        nn.init.normal_(self.cls_token, std=1e-6)
         self.norm = norm_layer(embed_dim)
-        self.pos_embed = nn.Parameter(torch.zeros(1, self.extras + num_patches, embed_dim))
+        self.projection_head = self._build_mlp(proj_layers, embed_dim, hidden_dim, output_dim) if proj_layers > 0 else nn.Identity()
+        self.initialize_model_weights()
+
+    def initialize_model_weights(self):
+
+        nn.init.normal_(self.cls_token, std=1e-6)
         trunc_normal_(self.pos_embed, std=.02)
+
+        for name, m in self.named_modules():
+            if isinstance(m, nn.Linear):
+                if 'qkv' in name:
+                    # treat the weights of Q, K, V separately
+                    val = math.sqrt(6. / float(m.weight.shape[0] // 3 + m.weight.shape[1]))
+                    nn.init.uniform_(m.weight, -val, val)
+                else:
+                    nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    nn.init.zeros_(m.bias)
+            elif isinstance(m, LayerNorm):
+                nn.init.constant_(m.bias, 0)
+                nn.init.constant_(m.weight, 1.0)
+            elif isinstance(self.patch_embed, PatchEmbed):
+                # xavier_uniform initialization
+                val = math.sqrt(6. / float(3 * reduce(mul, self.patch_embed.patch_size, 1) + self.embed_dim))
+                nn.init.uniform_(self.patch_embed.proj.weight, -val, val)
+                nn.init.zeros_(self.patch_embed.proj.bias)
 
     def get_num_param(self):
         n_params = sum(p.numel() for p in self.parameters() if p.requires_grad)
@@ -318,8 +291,70 @@ class RCMViT(nn.Module):
     def no_weight_decay(self):
         return {'pos_embed', 'cls_token'}
 
+    def _build_mlp(self, num_layers, input_dim, mlp_dim, output_dim, last_bn=False, use_bn=True):
+        mlp = []
+        for l in range(num_layers):
+            dim1 = input_dim if l == 0 else mlp_dim
+            dim2 = output_dim if l == num_layers - 1 else mlp_dim
+            mlp.append(nn.Linear(dim1, dim2, bias=False))
+            if l < num_layers - 1:
+                if use_bn:
+                    mlp.append(nn.BatchNorm1d(dim2))
+                mlp.append(nn.ReLU(inplace=True))
+            elif last_bn:
+                # follow SimCLR's design: https://github.com/google-research/simclr/blob/master/model_util.py#L157
+                # for simplicity, we further removed gamma in BN
+                mlp.append(nn.BatchNorm1d(dim2, affine=False))
+        return nn.Sequential(*mlp)
 
-class DMViT(RCMViT):
+    def forward(self, x, timesteps, **kwargs):
+        x = self.patch_embed(x)
+        B, L, D = x.shape
+
+        time_token = self.time_embed(timestep_embedding(timesteps, self.embed_dim))
+        time_token = time_token.unsqueeze(dim=1)
+        x = torch.cat((time_token, x), dim=1)
+
+        cls_tokens = self.cls_token.expand(B, -1, -1).to(self.dtype)
+
+        x = torch.cat((cls_tokens, x), dim=1)
+
+        x = x + self.pos_embed
+        x = x.to(self.dtype)
+
+        for blk in self.blocks:
+            x = blk(x)
+
+        x = self.norm(x[:, 0])
+        cls_token = self.projection_head(x)
+
+        return cls_token, x
+
+
+    # used in consistency tuning, as perceptual model forward
+    def forward_features(self, x, timesteps, **kwargs):
+        x = self.patch_embed(x)
+        B, L, D = x.shape
+
+        time_token = self.time_embed(timestep_embedding(timesteps, self.embed_dim))
+        time_token = time_token.unsqueeze(dim=1)
+        x = torch.cat((time_token, x), dim=1)
+
+        cls_tokens = self.cls_token.expand(B, -1, -1).to(self.dtype)
+
+        x = torch.cat((cls_tokens, x), dim=1)
+
+        x = x + self.pos_embed
+        x = x.to(self.dtype)
+
+        for blk in self.blocks:
+            x = blk(x)
+
+        cls_token = self.projection_head(self.norm(x[:, 0]))
+        return cls_token, None
+
+
+class EPGViT(RCMViT):
 
     def __init__(
         self,
@@ -332,8 +367,6 @@ class DMViT(RCMViT):
         num_heads=12,
         mlp_ratio=4., qkv_bias=False, qk_scale=None,
         norm_layer=LayerNorm,
-        mlp_time_embed=False,
-        use_checkpoint=False,
         tokens = 1,
 
         decoder_depth = 12,
@@ -342,55 +375,36 @@ class DMViT(RCMViT):
 
         num_classes = 1000,
         skip_post_norm=True,
-        zero_init_out=True,
-
+        drop=0,  attn_drop=0, drop_path=0,
         **kwargs,
     ):
-        super().__init__()
-
-        self.num_features = self.embed_dim = embed_dim  # num_features for consistency with other models
-        self.in_chans = in_channels
-        self.dtype= torch.float32 # by default use float32
-        self.patch_size = patch_size
-        self.patch_embed = PatchEmbed(img_size=image_size, patch_size=patch_size, in_chans=in_channels, embed_dim=embed_dim)
-
-        self.num_patches = num_patches = (image_size // patch_size) ** 2
-        self.patch_dim = patch_size ** 2 * in_channels
-        self.kwargs = kwargs # reserved for training rcm-uvit model
-
-        self.time_embed = nn.Sequential(
-            nn.Linear(embed_dim, 4 * embed_dim),
-            nn.SiLU(),
-            nn.Linear(4 * embed_dim, embed_dim),
-        ) if mlp_time_embed else nn.Identity()
-
-        self.extras = 1 + tokens
-        self.blocks = nn.ModuleList([
-            Block(
-                dim=embed_dim, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, qk_scale=qk_scale,
-                norm_layer=norm_layer, use_checkpoint=use_checkpoint, qk_norm=qk_norm)
-            for _ in range(depth)
-        ])
-
-        self.tokens = tokens
-        self.cls_token = nn.Parameter(torch.zeros(1, tokens, embed_dim))
-        self.norm = norm_layer(embed_dim)
-        self.pos_embed = nn.Parameter(torch.zeros(1, self.extras + num_patches, embed_dim))
+        super().__init__(
+            image_size=image_size,
+            patch_size=patch_size,
+            in_channels=in_channels,
+            embed_dim=embed_dim,
+            depth=depth,
+            num_heads=num_heads,
+            mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, qk_scale=qk_scale,
+            norm_layer=norm_layer,
+            tokens = tokens,
+            proj_layers=0,
+            drop=0, attn_drop=0, drop_path=0,
+        )
 
         self.decoder_blocks = nn.ModuleList([
             DecoderBlock(
-                dim=decoder_embed_dim, encoder_dim=embed_dim, num_heads=decoder_num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, qk_scale=qk_scale,
-                norm_layer=norm_layer, use_checkpoint=use_checkpoint, 
-                skip=True, 
-                skip_post_norm=skip_post_norm)
-            for i in range(decoder_depth)
+                dim=decoder_embed_dim, encoder_dim=embed_dim, 
+                num_heads=decoder_num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, qk_scale=qk_scale,
+                norm_layer=norm_layer, skip=True, skip_post_norm=skip_post_norm, proj_drop=drop, attn_drop=attn_drop, drop_path=drop_path,
+            )
+            for _ in range(decoder_depth)
         ])
 
         self.encoder_to_decoder = nn.Linear(embed_dim, decoder_embed_dim) if decoder_embed_dim != embed_dim else None
         self.out_norm = nn.LayerNorm(decoder_embed_dim)
         self.out = nn.Linear(decoder_embed_dim, (self.patch_size**2)*in_channels)
         self.class_embed = nn.Embedding(num_classes + 1, embed_dim) if num_classes > 0 else None # the final token is unconditional token
-        self.zero_init_out = zero_init_out
         self.init_weights()
 
         n_params = sum(p.numel() for p in self.parameters() if p.requires_grad)
@@ -409,32 +423,15 @@ class DMViT(RCMViT):
         trunc_normal_(self.pos_embed, std=.02)
 
         # zero-init final output layer
-        if self.zero_init_out:
-            self.out.weight.detach().zero_()
-            self.out.bias.detach().zero_()            
-            print("zero-init output layer")
+        self.out.weight.detach().zero_()
+        self.out.bias.detach().zero_()            
 
         for block in self.decoder_blocks:
             nn.init.constant_(block.adaLN_modulation[-1].weight, 0)
             nn.init.constant_(block.adaLN_modulation[-1].bias, 0)
 
         # init class embedding layer
-        if self.class_embed:
-            nn.init.normal_(self.class_embed.weight, std=0.02)
-
-    def get_num_param(self):
-        n_params = sum(p.numel() for p in self.parameters() if p.requires_grad)
-        adaln_params = 0
-        for n, p in self.named_parameters():
-            if "adaLN" in n:
-                # print(n, p.shape)
-                adaln_params += p.numel()
-        print("adaLN parameters:", adaln_params)
-        return n_params
-
-    @torch.jit.ignore
-    def no_weight_decay(self):
-        return {'pos_embed', 'cls_token'}
+        nn.init.normal_(self.class_embed.weight, std=0.02)
 
     def unpatchify(self, x):
         # b, n, c
@@ -457,13 +454,9 @@ class DMViT(RCMViT):
         x = torch.cat((time_token, x), dim=1)
 
         cls_tokens = self.cls_token.expand(B, -1, -1).to(self.dtype)
-
-        cond = cls_tokens
-
-        if y is not None:
-            y = self.class_embed(y)
-            y = y.unsqueeze(dim=1) # B, 1, D
-            cond = cls_tokens +  y # broadcast to all class tokens
+        y = self.class_embed(y)
+        y = y.unsqueeze(dim=1) # B, 1, D
+        cond = cls_tokens +  y # broadcast to all class tokens
 
         x = torch.cat((cond, x), dim=1)
 
