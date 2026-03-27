@@ -11,8 +11,8 @@ This repository provides the official PyTorch implementation of EPG, a framework
 <p><center>Figure 1: With SSL pre-training, our Pixel-Space diffusion transformer achieves 1.58 SOTA FID (with 75 NFE) on ImageNet-256.</center></p>
 
 ## News :fire:
-- [2025.4.1] Release codes and checkpoints.
-> Note: As of 2026.03, It's possible the training codes are not fully tested. Please let us know if you have any problems in reproducing our results.
+- [2025.3.27] Release codes and checkpoints.
+> Note: As of 2026.03.27, It's possible the training codes are not fully tested. Please let us know if you have any problems in reproducing our results.
 
 
 ## Dependencies
@@ -159,7 +159,7 @@ sh scripts/sample_cm_in256.sh # sample EPG-L/16 trained on IN-256
 
 :star2: **If you find our codes useful, please do not hesitate to star our github repo.**
 
-> As of 2026.04.01, it's possible the training codes are not fully tested. Please let us know if you have any problems in reproducing the results.
+> As of 2026.03.27, it's possible the training codes are not fully tested. Please let us know if you have any problems in reproducing the results.
 
 ### Acknowledgement
 Our codes are built upon the following repositories:
