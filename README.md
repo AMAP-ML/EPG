@@ -102,7 +102,15 @@ python evaluator.py  [path to reference .npz] [path to .npz of generated images]
 ## Checkpoints
 We release checkpoints of our pre-trained and fine-tuned models in the paper.
 
-**Table 1:** Network configurations. Encoder and decoder settings are separated by comma.
+**Table 1:** Pre-trained model.
+| Model | Dataset | Download Link |
+| -- | -- | -- |
+| RCM-B | IN-256 | [download](https://huggingface.co/jiachenlei/EPG/tree/main/RCM-B-IN256) |
+| RCM-B | IN-512 | [download](https://huggingface.co/jiachenlei/EPG/tree/main/RCM-B-IN512) |
+| RCM-L | IN-256 | [download](https://huggingface.co/jiachenlei/EPG/tree/main/RCM-L-IN256) |
+
+
+**Table 2:** Fine-tuned model configurations. Encoder and decoder settings are separated by comma.
 | Name | Blocks | Dim | Heads | Params |
 | -- | -- | -- | -- | -- |
 | EPG-L | 16, 16 | 1024, 1024 | 16, 16 | 540M |
@@ -110,23 +118,14 @@ We release checkpoints of our pre-trained and fine-tuned models in the paper.
 | EPG-XXL | 12, 12 | 768, 1920 | 12, 16 | 789M |
 | EPG-G | 12, 12 | 768, 2688 | 12, 21 | 1391M |
 
-</br>
-
-**Table 2:** Pre-trained model.
-| Model | Dataset | Download Link |
-| -- | -- | -- |
-| RCM-B | IN-256 | [download]() |
-| RCM-B | IN-512 | [download]() |
-| RCM-L | IN-256 | [download]() |
-
-**Table 3:** Fine-tuned model in downstream tasks. Settings: FID50K, Heun32, intercal-cfg.
+**Table 3:** Fine-tuned model performance in downstream tasks.
 | Model | Task | FID  | Download Link |
 | -- | -- | -- | -- |
-| EPG-XL/16 | DM on IN-256 | 2.04 | [download](https://huggingface.co/jiachenlei/EPG/resolve/main/EPG-XL16-imagenet256.pth?download=true) |
-| EPG-XXL/16 | DM on IN-256 | 1.87 | [download](https://huggingface.co/jiachenlei/EPG/resolve/main/EPG-XXL16-imagenet256.pth?download=true) |
-| EPG-G/16 | DM on IN-256 | 1.58 |  [download](https://huggingface.co/jiachenlei/EPG/resolve/main/EPG-G16-imagenet256.pth?download=true) |
-| EPG-L/32 | DM on IN-512 | 2.35 | [download](https://huggingface.co/jiachenlei/EPG/resolve/main/EPG-L32-imagenet512.pth?download=true) |
-| EPG-L/16 | CM on IN-256 | 8.82 | [download](https://huggingface.co/jiachenlei/EPG/resolve/main/EPG-L16-imagenet256-onestep.pth?download=true) |
+| EPG-XL/16 | DM on IN-256 | 2.04 | [download](https://huggingface.co/jiachenlei/EPG/tree/main/EPG-XL16-imagenet256) |
+| EPG-XXL/16 | DM on IN-256 | 1.87 | [download](https://huggingface.co/jiachenlei/EPG/tree/main/EPG-XXL16-imagenet256) |
+| EPG-G/16 | DM on IN-256 | 1.58 |  [download](https://huggingface.co/jiachenlei/EPG/tree/main/EPG-G16-imagenet256) |
+| EPG-L/32 | DM on IN-512 | 2.35 | [download](https://huggingface.co/jiachenlei/EPG/tree/main/EPG-L32-imagenet512) |
+| EPG-L/16 | CM on IN-256 | 8.82 | [download](https://huggingface.co/jiachenlei/EPG/tree/main/EPG-L16-imagenet256-onestep) |
 
 <!-- **Table 3:** Pre-trained encoders.
 | Model | Task | Model type | Download Link |
@@ -137,7 +136,7 @@ We release checkpoints of our pre-trained and fine-tuned models in the paper.
 
 
 ## Reproducibility
-You could reproduce FID reported in our paper by running the following commands. You shall specify the path to the model weights and modify necessary parameters in the scripts.
+You could reproduce FID reported in our paper by running the following commands. You shall specify the path to the directory that contains model weights and modify necessary parameters in the scripts.
 ```bash
 # EPG's DM variant
 sh scripts/sample_dm_in256.sh # sample EPG-XL/16 trained on IN-256
@@ -150,7 +149,7 @@ sh scripts/sample_cm_in256.sh # sample EPG-L/16 trained on IN-256
 ## Citation
 ```
 @article{lei2025advancing,
-  title={Advancing End-to-End Pixel Space Generative Modeling via Self-supervised Pre-training},
+  title={There is No VAE: End-to-End Pixel Space Generative Modeling via Self-supervised Pre-training},
   author={Lei, Jiachen and Liu, Keli and Berner, Julius and Yu, Haiming and Zheng, Hongkai and Wu, Jiahong and Chu, Xiangxiang},
   journal={arXiv preprint arXiv:2510.12586},
   year={2025}
